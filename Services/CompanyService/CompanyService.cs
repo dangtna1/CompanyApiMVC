@@ -30,8 +30,10 @@ namespace companyApi.Services.CompanyService
       //Erase Id property or change isIdentify in sqlServer
       _context.Companies.Add(company);
       _context.SaveChanges();
-      var dbCompanies = await _context.Companies.ToListAsync();
-      serviceResponse.Data = dbCompanies.Select(companyItem => _mapper.Map<GetCompanyDto>(companyItem)).ToList();
+      // var dbCompanies = await _context.Companies.ToListAsync();
+      // serviceResponse.Data = dbCompanies.Select(companyItem => _mapper.Map<GetCompanyDto>(companyItem)).ToList();
+      serviceResponse.Data = await _context.Companies.Select(companyItem =>
+        _mapper.Map<GetCompanyDto>(companyItem)).ToListAsync();
       return serviceResponse;
     }
 
@@ -47,7 +49,8 @@ namespace companyApi.Services.CompanyService
         }
         _context.Companies.Remove(company);
         _context.SaveChanges();
-        serviceResponse.Data = _context.Companies.Select(companyItem => _mapper.Map<GetCompanyDto>(companyItem)).ToList();
+        serviceResponse.Data = await _context.Companies.Select(companyItem =>
+           _mapper.Map<GetCompanyDto>(companyItem)).ToListAsync();
       }
       catch (Exception ex)
       {
@@ -61,8 +64,9 @@ namespace companyApi.Services.CompanyService
     public async Task<ServiceResponse<List<GetCompanyDto>>> GetAllCompanies()
     {
       var serviceResponse = new ServiceResponse<List<GetCompanyDto>>();
-      var dbCompanies = await _context.Companies.ToListAsync(); //get data from database and turn it to a list
-      serviceResponse.Data = dbCompanies.Select(companyItem => _mapper.Map<GetCompanyDto>(companyItem)).ToList();
+      // var dbCompanies = await _context.Companies.ToListAsync(); //get data from database and turn it to a list
+      serviceResponse.Data = await _context.Companies.Select(companyItem =>
+        _mapper.Map<GetCompanyDto>(companyItem)).ToListAsync();
       return serviceResponse;
     }
 
@@ -89,9 +93,9 @@ namespace companyApi.Services.CompanyService
     public async Task<ServiceResponse<GetCompanyDto>> UpdateCompany(UpdateCompanyDto updatedCompany)
     {
       var serviceResponse = new ServiceResponse<GetCompanyDto>();
-
       try
       {
+        //pointer?
         var dbCompany = await _context.Companies.FirstOrDefaultAsync(companyItem => companyItem.Id == updatedCompany.Id); //take company directly?
         if (dbCompany is null)
         {
@@ -100,15 +104,14 @@ namespace companyApi.Services.CompanyService
         dbCompany.Name = updatedCompany.Name;
         dbCompany.isActive = updatedCompany.isActive;
         dbCompany.Rating = updatedCompany.Rating;
-        serviceResponse.Data = _mapper.Map<GetCompanyDto>(dbCompany);
         _context.SaveChanges();
+        serviceResponse.Data = _mapper.Map<GetCompanyDto>(dbCompany);
       }
       catch (Exception ex)
       {
         serviceResponse.Success = false;
         serviceResponse.Message = ex.Message;
       }
-
       return serviceResponse;
     }
   }
